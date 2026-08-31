@@ -2,7 +2,7 @@
 agp = "9.3.2"
 activityCompose = "1.13.0"
 composeBom = "2026.08.00"
-composeCompiler = "2.3.21"
+composeCompiler = "2.4.10"
 coreKtx = "1.19.0"
 detekt = "1.23.8"
 junit4 = "4.13.2"
