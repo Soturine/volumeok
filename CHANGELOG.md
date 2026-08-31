@@ -17,9 +17,10 @@ feasibility baseline; entries under `Unreleased` are not production claims.
 - Bounded protection policy decisions, pause expiry, truthful runtime restart handling, and deterministic oscillation
   circuit-breaker behavior.
 - Controlled ringtone-volume test contract that requires fresh readback and restores the original value.
+- M0 diagnostic UI and Android adapter for ringtone volume, ringer mode, DND state, output-device presence, manual
+  refresh, and foreground-only change observation.
 
 ### Status
 
 - M0 remains **partial / awaiting device validation**. No continuous-protection, OEM-compatibility, background-runtime,
   Quick Settings, or production-readiness claim has been established.
-

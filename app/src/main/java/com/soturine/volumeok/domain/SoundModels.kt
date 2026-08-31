@@ -24,6 +24,17 @@ enum class CapabilityStatus {
     UNKNOWN
 }
 
+enum class SoundCapability {
+    READ_RING_VOLUME,
+    WRITE_RING_VOLUME,
+    READ_RINGER_MODE,
+    READ_DND,
+    CHANGE_DND,
+    READ_OUTPUT_DEVICES,
+    OBSERVE_FOREGROUND_CHANGES,
+    CONTINUOUS_PROTECTION
+}
+
 sealed interface Reading<out T> {
     data class Available<T>(val value: T) : Reading<T>
 
@@ -60,5 +71,6 @@ data class SoundSnapshot(
     val ringVolume: Reading<RingVolume>,
     val ringerMode: Reading<RingerMode>,
     val dndState: Reading<DndState>,
-    val audioRoute: Reading<AudioRouteEvidence>
+    val audioRoute: Reading<AudioRouteEvidence>,
+    val capabilities: Map<SoundCapability, CapabilityStatus> = emptyMap()
 )

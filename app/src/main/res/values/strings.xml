@@ -1,7 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">VolumeOK</string>
-    <string name="foundation_status">Feasibility diagnostic foundation</string>
     <string name="refresh">Refresh</string>
+    <string name="current_readiness">Current readiness</string>
+    <string name="diagnostic_evidence">Diagnostic evidence</string>
+    <string name="readiness_ready">Ready</string>
+    <string name="readiness_attention">Attention</string>
+    <string name="readiness_action_required">Action required</string>
+    <string name="readiness_unknown">Unknown</string>
+    <string name="review_evidence">Review the unavailable or unsafe evidence below.</string>
+    <string name="ringtone_value">Ringtone: %1$s</string>
+    <string name="ringer_mode_value">Ringer mode: %1$s</string>
+    <string name="dnd_value">Do Not Disturb: %1$s</string>
+    <string name="audio_route_value">Output-device evidence: %1$s</string>
+    <string name="protection_runtime_value">Protection runtime: %1$s</string>
+    <string name="volume_fraction">%1$d / %2$d</string>
+    <string name="unavailable">Unavailable</string>
+    <string name="ringer_normal">Normal</string>
+    <string name="ringer_vibrate">Vibrate</string>
+    <string name="ringer_silent">Silent</string>
+    <string name="dnd_off">Off</string>
+    <string name="dnd_priority">Priority only</string>
+    <string name="dnd_alarms">Alarms only</string>
+    <string name="dnd_silence">Total silence</string>
+    <string name="route_builtin_present">Built-in output present; active routing not proven</string>
+    <string name="route_wired_present">Wired output present; active routing not proven</string>
+    <string name="route_bluetooth_present">Bluetooth output present; active routing not proven</string>
+    <string name="route_remote_present">Remote output present; active routing not proven</string>
+    <string name="route_multiple_present">Multiple outputs present; active routing not proven</string>
+    <string name="runtime_stopped">Stopped</string>
+    <string name="protection_not_validated">Continuous protection is not validated and is not running.</string>
+    <string name="controlled_test">Controlled one-step test</string>
+    <string name="controlled_effective_restored">Write verified by readback; original volume restored.</string>
+    <string name="controlled_not_effective">The write did not change the observed volume.</string>
+    <string name="controlled_unexpected_readback">The observed volume differed from the requested value.</string>
+    <string name="controlled_restore_failed">Warning: the original volume could not be verified after restoration.</string>
+    <string name="controlled_read_unavailable">The test could not verify a fresh volume read.</string>
+    <string name="controlled_no_safe_change">No safe one-step change is available on this device.</string>
 </resources>
-

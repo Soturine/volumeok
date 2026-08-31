@@ -1,7 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">VolumeOK</string>
-    <string name="foundation_status">Base de diagnóstico de viabilidad</string>
     <string name="refresh">Actualizar</string>
+    <string name="current_readiness">Preparación actual</string>
+    <string name="diagnostic_evidence">Evidencia del diagnóstico</string>
+    <string name="readiness_ready">Listo</string>
+    <string name="readiness_attention">Atención</string>
+    <string name="readiness_action_required">Acción necesaria</string>
+    <string name="readiness_unknown">Desconocido</string>
+    <string name="review_evidence">Revisa abajo la evidencia no disponible o insegura.</string>
+    <string name="ringtone_value">Tono: %1$s</string>
+    <string name="ringer_mode_value">Modo de timbre: %1$s</string>
+    <string name="dnd_value">No molestar: %1$s</string>
+    <string name="audio_route_value">Evidencia de dispositivos de salida: %1$s</string>
+    <string name="protection_runtime_value">Protección en ejecución: %1$s</string>
+    <string name="volume_fraction">%1$d / %2$d</string>
+    <string name="unavailable">No disponible</string>
+    <string name="ringer_normal">Normal</string>
+    <string name="ringer_vibrate">Vibración</string>
+    <string name="ringer_silent">Silencio</string>
+    <string name="dnd_off">Desactivado</string>
+    <string name="dnd_priority">Solo prioridad</string>
+    <string name="dnd_alarms">Solo alarmas</string>
+    <string name="dnd_silence">Silencio total</string>
+    <string name="route_builtin_present">Salida interna presente; ruta activa no comprobada</string>
+    <string name="route_wired_present">Salida con cable presente; ruta activa no comprobada</string>
+    <string name="route_bluetooth_present">Salida Bluetooth presente; ruta activa no comprobada</string>
+    <string name="route_remote_present">Salida remota presente; ruta activa no comprobada</string>
+    <string name="route_multiple_present">Varias salidas presentes; ruta activa no comprobada</string>
+    <string name="runtime_stopped">Detenida</string>
+    <string name="protection_not_validated">La protección continua no está validada ni en ejecución.</string>
+    <string name="controlled_test">Prueba controlada de un nivel</string>
+    <string name="controlled_effective_restored">Cambio verificado por relectura; volumen original restaurado.</string>
+    <string name="controlled_not_effective">El cambio no modificó el volumen observado.</string>
+    <string name="controlled_unexpected_readback">El volumen observado fue distinto del solicitado.</string>
+    <string name="controlled_restore_failed">Aviso: no se pudo verificar el volumen original tras restaurarlo.</string>
+    <string name="controlled_read_unavailable">La prueba no pudo verificar una nueva lectura del volumen.</string>
+    <string name="controlled_no_safe_change">No hay un cambio seguro de un nivel disponible en este dispositivo.</string>
 </resources>
-
