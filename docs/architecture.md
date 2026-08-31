@@ -239,3 +239,20 @@ Create/update an ADR for changes involving:
 - proprietary/open-source license change;
 - major third-party runtime dependency;
 - Gradle module split with lasting coupling consequences.
+
+## Current M0 implementation
+
+M0 uses one `:app` Gradle module with package boundaries rather than premature modules:
+
+```text
+application/       snapshot and controlled-write ports/use case
+domain/            evidence, readiness, protection and circuit breaker
+feature/home/      ViewModel/UDF state and diagnostic Compose UI
+platform/audio/    AudioManager, NotificationManager and foreground observer adapters
+```
+
+The composition root is `MainActivity`. It wires `AndroidSoundStateAdapter` and a foreground-only
+`SoundSettingsObserver` to `HomeViewModel`. No Android type enters the domain package.
+
+There is no persistence or continuous runtime in M0. Runtime protection is always reported as `STOPPED`. The observer
+is an experimental UI refresh signal, not a background-protection mechanism; ADR-004 records the deferred decision.

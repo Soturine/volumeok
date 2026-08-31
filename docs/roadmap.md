@@ -2,6 +2,10 @@
 
 ## M0 — Feasibility
 
+Status on 2026-08-31: **partial / awaiting physical-device validation**. The executable diagnostic foundation,
+deterministic rules, controlled write/readback workflow, foreground observation experiment, and CI exist. No connected
+device was available, so OEM/background/battery/process-death evidence and the runtime-mechanism decision remain open.
+
 Goal: prove the product is technically honest on Android 16-era devices before promising continuous protection.
 
 Tasks:

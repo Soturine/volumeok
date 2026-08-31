@@ -162,3 +162,19 @@ A release is not qualified by “tests passed” alone. Required evidence includ
 - critical journeys manually/automatically validated;
 - release notes match actual behavior;
 - generated AAB is the artifact that was validated.
+
+## M0 executable evidence
+
+The current local/CI gate is:
+
+```text
+./gradlew spotlessCheck testDebugUnitTest detekt lintDebug assembleDebug
+```
+
+Pure unit tests cover readiness composition and false-green negative paths, protection bounds, pause expiry with a
+controllable clock, inactive runtime after restart, the `70 → 0 → 70 → 0 → 70 → 0` oscillation pattern, ineffective
+writes, safe non-maximum targets, fresh readback, and restoration.
+
+`compileDebugAndroidTestKotlin` proves the Android read-contract test compiles. It is not device evidence. Run
+`connectedDebugAndroidTest` only with an attached test device, then record actual results in
+`docs/evidence/M0-device-matrix.md`; never translate a compiled or emulator-only test into an OEM claim.

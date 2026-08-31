@@ -127,9 +127,24 @@ The **domain must not depend directly on `AudioManager`, `NotificationManager`, 
 
 ## Current status
 
-**Status: foundation / pre-code.**
+**Status: M0 partial / awaiting physical-device validation.**
 
-The repository currently documents the intended product and engineering constraints. Android implementation must not be described as complete until M0 feasibility evidence exists and the source scaffold is committed.
+The repository contains an executable diagnostic foundation, domain invariants, Android public-API adapters, a minimal
+Compose UI, and local/remote quality gates. No physical Android device was available during the automated M0 run, so
+continuous protection, cross-OEM behavior, background reliability, battery impact, Quick Settings, and Play readiness
+remain unvalidated. See [`docs/current-state.md`](docs/current-state.md) and the
+[`M0 device matrix`](docs/evidence/M0-device-matrix.md).
+
+## Build and verify
+
+Use JDK 17 and an Android SDK with platform 37 installed. The app targets API 36 as required by the M0 contract.
+
+```text
+./gradlew spotlessCheck testDebugUnitTest detekt lintDebug assembleDebug
+```
+
+On Windows, use `gradlew.bat`. The debug APK is generated under `app/build/outputs/apk/debug/`. Instrumented tests are
+compiled by CI-ready Gradle tasks but require an attached emulator or physical device to execute.
 
 ## License / rights
 
