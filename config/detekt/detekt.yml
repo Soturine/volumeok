@@ -1,0 +1,11 @@
+config:
+  validation: true
+
+complexity:
+  LongMethod:
+    threshold: 80
+
+style:
+  MagicNumber:
+    active: false
+

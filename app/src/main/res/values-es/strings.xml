@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VolumeOK</string>
+    <string name="foundation_status">Base de diagnóstico de viabilidad</string>
+    <string name="refresh">Actualizar</string>
+</resources>
+
