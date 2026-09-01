@@ -28,6 +28,8 @@ feasibility baseline; entries under `Unreleased` are not production claims.
 
 - Made the M0B harness compatible with UTF-8 UI text under Windows PowerShell 5.1 and restored the debug app after
   Android instrumentation removes it, so subsequent physical UI scenarios can run against the same APK.
+- Distinguished ADB state/readback plus explicit UI refresh from automatic foreground observation, reporting the
+  former as partial evidence that still requires physical-control validation.
 
 ### Status
 

@@ -310,14 +310,25 @@ function Wait-Until {
         [Parameter(Mandatory)] [string]$FailureMessage
     )
 
+    if (-not (Test-Until -Condition $Condition)) {
+        throw $FailureMessage
+    }
+}
+
+function Test-Until {
+    param(
+        [Parameter(Mandatory)] [scriptblock]$Condition,
+        [int]$TimeoutSeconds = $WaitTimeoutSeconds
+    )
+
     $watch = [System.Diagnostics.Stopwatch]::StartNew()
-    while ($watch.Elapsed.TotalSeconds -lt $WaitTimeoutSeconds) {
+    while ($watch.Elapsed.TotalSeconds -lt $TimeoutSeconds) {
         if (& $Condition) {
-            return
+            return $true
         }
         Start-Sleep -Milliseconds 250
     }
-    throw $FailureMessage
+    $false
 }
 
 function Start-VolumeOk {
@@ -465,6 +476,19 @@ function Get-UiNodeCenter {
     }
 }
 
+function Invoke-UiTextTap {
+    param(
+        [Parameter(Mandatory)] [string]$UiXml,
+        [Parameter(Mandatory)] [string]$TextPattern
+    )
+
+    $center = Get-UiNodeCenter -UiXml $UiXml -TextPattern $TextPattern
+    if (-not $center) {
+        throw "Could not locate a UI control matching '$TextPattern'."
+    }
+    Invoke-AdbText -Arguments @("shell", "input", "tap", $center.X.ToString(), $center.Y.ToString()) | Out-Null
+}
+
 function Invoke-ControlledWriteScenario {
     if ($script:StateRestorationFailed) {
         Add-Outcome "controlled-write" "SKIPPED" "AUTOMATED_INSTRUMENTED" "A previous restoration failure stopped mutable scenarios."
@@ -534,64 +558,118 @@ function Invoke-ForegroundObservationScenario {
     }
     Start-VolumeOk
     $originalVolume = Get-RingVolumeState
-    $target = if ($originalVolume.Current -eq 0) { 1 } else { 0 }
-    if ($target -ge $originalVolume.Maximum) {
+    $target = $null
+    if ($originalVolume.Current -eq 0) {
+        Add-ManualCheck "Leave deliberate zero volume unchanged; use hardware controls to verify 0/max plus vibrate or silent is not READY."
+    } elseif ($originalVolume.Current -lt $originalVolume.Maximum - 1) {
+        $target = $originalVolume.Current + 1
+    } else {
+        $target = $originalVolume.Current - 1
+    }
+    if ($null -ne $target -and $target -ge $originalVolume.Maximum) {
         Add-Outcome "foreground-observation" "UNSUPPORTED" "AUTOMATED_ADB" "No non-maximum test target exists."
         return
     }
 
     $volumeObserved = $false
-    try {
-        Set-RingVolumeState -Value $target
-        Wait-Until -FailureMessage "Foreground UI did not reflect STREAM_RING=$target." -Condition {
-            $candidate = Capture-UiHierarchy -Name "02-after-volume-change"
-            if ($candidate -match "(?:Ringtone|Toque|Tono):\s*$target\s*/\s*$($originalVolume.Maximum)") {
-                $script:ObservationUiBuffer = $candidate
-                return $true
-            }
-            $false
-        }
-        $volumeUi = $script:ObservationUiBuffer
-        Remove-Variable -Name ObservationUiBuffer -Scope Script -ErrorAction SilentlyContinue
-        Capture-Screenshot -Name "02-after-volume-change" | Out-Null
-        $volumeObserved = $true
-        if ($target -eq 0 -and $volumeUi -match "\bReady\b|\bPronto\b|\bListo\b") {
-            throw "Zero ringtone volume rendered READY."
-        }
-    } finally {
-        Set-RingVolumeState -Value $originalVolume.Current
+    $volumeObservedAutomatically = $false
+    if ($null -ne $target) {
         try {
-            Wait-Until -FailureMessage "Original STREAM_RING volume was not restored." -Condition {
-                (Get-RingVolumeState).Current -eq $originalVolume.Current
+            Set-RingVolumeState -Value $target
+            $volumeChanged = Test-Until -TimeoutSeconds ([Math]::Min(5, $WaitTimeoutSeconds)) -Condition {
+            (Get-RingVolumeState).Current -eq $target
             }
-        } catch {
-            $script:StateRestorationFailed = $true
-            throw
+            if ($volumeChanged) {
+                $volumeObservedAutomatically = Test-Until -TimeoutSeconds ([Math]::Min(5, $WaitTimeoutSeconds)) -Condition {
+                    $candidate = Capture-UiHierarchy -Name "02-after-volume-change"
+                    if ($candidate -match "(?:Ringtone|Toque|Tono):\s*$target\s*/\s*$($originalVolume.Maximum)") {
+                        $script:ObservationUiBuffer = $candidate
+                        return $true
+                    }
+                    $false
+                }
+                if (-not $volumeObservedAutomatically) {
+                    $staleUi = Capture-UiHierarchy -Name "02-before-manual-refresh"
+                    Invoke-UiTextTap -UiXml $staleUi -TextPattern "Refresh|Atualizar|Actualizar"
+                    Wait-Until -FailureMessage "Foreground UI did not reflect STREAM_RING=$target after explicit refresh." -Condition {
+                        $candidate = Capture-UiHierarchy -Name "02-after-volume-change"
+                        if ($candidate -match "(?:Ringtone|Toque|Tono):\s*$target\s*/\s*$($originalVolume.Maximum)") {
+                            $script:ObservationUiBuffer = $candidate
+                            return $true
+                        }
+                        $false
+                    }
+                }
+                $volumeUi = $script:ObservationUiBuffer
+                Remove-Variable -Name ObservationUiBuffer -Scope Script -ErrorAction SilentlyContinue
+                Capture-Screenshot -Name "02-after-volume-change" | Out-Null
+                $volumeObserved = $true
+                if ($target -eq 0 -and $volumeUi -match "\bReady\b|\bPronto\b|\bListo\b") {
+                    throw "Zero ringtone volume rendered READY."
+                }
+            } else {
+                Add-ManualCheck "ADB could not change STREAM_RING on this device; change ring volume with hardware controls while VolumeOK is foregrounded."
+            }
+        } finally {
+            Set-RingVolumeState -Value $originalVolume.Current
+            try {
+                Wait-Until -FailureMessage "Original STREAM_RING volume was not restored." -Condition {
+                    (Get-RingVolumeState).Current -eq $originalVolume.Current
+                }
+            } catch {
+                $script:StateRestorationFailed = $true
+                throw
+            }
         }
     }
 
     $zenRaw = (Invoke-AdbText -Arguments @("shell", "settings", "get", "global", "zen_mode") -AllowFailure).Output.Trim()
     $dndObserved = $false
+    $dndObservedAutomatically = $false
     if ($zenRaw -match "^\d+$") {
         $originalZen = [int]$zenRaw
         $targetDnd = if ($originalZen -eq 1) { "off" } else { "priority" }
         try {
             $setDnd = Invoke-AdbText -Arguments @("shell", "cmd", "notification", "set_dnd", $targetDnd) -AllowFailure
             if ($setDnd.ExitCode -eq 0) {
-                Wait-Until -FailureMessage "Foreground UI did not reflect the DND transition." -Condition {
-                    $candidate = Capture-UiHierarchy -Name "02b-after-dnd-change"
-                    $expected = if ($targetDnd -eq "priority") {
-                        "Priority only|Somente prioridade|Solo prioridad"
-                    } else {
-                        "Do Not Disturb:\s*Off|Perturbe:\s*Desativado|No molestar:\s*Desactivado"
-                    }
-                    if ($candidate -match $expected) {
-                        return $true
-                    }
-                    $false
+                $targetZen = if ($targetDnd -eq "priority") { 1 } else { 0 }
+                $dndChanged = Test-Until -TimeoutSeconds ([Math]::Min(5, $WaitTimeoutSeconds)) -Condition {
+                    $observedZen = (Invoke-AdbText -Arguments @(
+                        "shell", "settings", "get", "global", "zen_mode"
+                    ) -AllowFailure).Output.Trim()
+                    $observedZen -eq $targetZen.ToString()
                 }
-                Capture-Screenshot -Name "02b-after-dnd-change" | Out-Null
-                $dndObserved = $true
+                if ($dndChanged) {
+                    $dndObservedAutomatically = Test-Until -TimeoutSeconds ([Math]::Min(5, $WaitTimeoutSeconds)) -Condition {
+                        $candidate = Capture-UiHierarchy -Name "02b-after-dnd-change"
+                        $expected = if ($targetDnd -eq "priority") {
+                            "Priority only|Somente prioridade|Solo prioridad"
+                        } else {
+                            "Do Not Disturb:\s*Off|Perturbe:\s*Desativado|No molestar:\s*Desactivado"
+                        }
+                        if ($candidate -match $expected) {
+                            return $true
+                        }
+                        $false
+                    }
+                    if (-not $dndObservedAutomatically) {
+                        $staleUi = Capture-UiHierarchy -Name "02b-before-manual-refresh"
+                        Invoke-UiTextTap -UiXml $staleUi -TextPattern "Refresh|Atualizar|Actualizar"
+                        Wait-Until -FailureMessage "Foreground UI did not reflect DND after explicit refresh." -Condition {
+                            $candidate = Capture-UiHierarchy -Name "02b-after-dnd-change"
+                            $expected = if ($targetDnd -eq "priority") {
+                                "Priority only|Somente prioridade|Solo prioridad"
+                            } else {
+                                "Do Not Disturb:\s*Off|Perturbe:\s*Desativado|No molestar:\s*Desactivado"
+                            }
+                            $candidate -match $expected
+                        }
+                    }
+                    Capture-Screenshot -Name "02b-after-dnd-change" | Out-Null
+                    $dndObserved = $true
+                } else {
+                    Add-ManualCheck "ADB could not change DND on this device; toggle DND through the OEM UI while VolumeOK is foregrounded."
+                }
             }
         } finally {
             if (-not (Restore-ZenMode -OriginalMode $originalZen)) {
@@ -613,8 +691,14 @@ function Invoke-ForegroundObservationScenario {
     }
 
     Add-ManualCheck "Change normal/vibrate/silent with the physical buttons or OEM UI and record observer latency."
-    if ($volumeObserved -and $dndObserved) {
+    if ($volumeObserved -and $dndObserved -and $volumeObservedAutomatically -and $dndObservedAutomatically) {
         Add-Outcome "foreground-observation" "PASS" "AUTOMATED_ADB" "Foreground UI observed safe volume and DND transitions; original states were restored." @(
+            (Join-Path $script:ArtifactRoot "screenshots\02-after-volume-change.png"),
+            (Join-Path $script:ArtifactRoot "screenshots\02b-after-dnd-change.png")
+        )
+    } elseif ($volumeObserved -and $dndObserved) {
+        Add-ManualCheck "Use hardware controls to verify foreground refresh notifications for volume and DND on this OEM."
+        Add-Outcome "foreground-observation" "PARTIAL" "AUTOMATED_ADB+MANUAL_REQUIRED" "Safe volume and DND transitions, explicit UI refresh, and restoration passed; ADB-induced changes did not prove automatic foreground notification." @(
             (Join-Path $script:ArtifactRoot "screenshots\02-after-volume-change.png"),
             (Join-Path $script:ArtifactRoot "screenshots\02b-after-dnd-change.png")
         )
@@ -623,8 +707,15 @@ function Invoke-ForegroundObservationScenario {
         Add-Outcome "foreground-observation" "PARTIAL" "AUTOMATED_ADB+MANUAL_REQUIRED" "Volume transition was observed and restored; DND automation was unavailable." @(
             (Join-Path $script:ArtifactRoot "screenshots\02-after-volume-change.png")
         )
+    } elseif ($dndObserved) {
+        if (-not $dndObservedAutomatically) {
+            Add-ManualCheck "Toggle DND through the OEM UI to verify automatic foreground notification without pressing Refresh."
+        }
+        Add-Outcome "foreground-observation" "PARTIAL" "AUTOMATED_ADB+MANUAL_REQUIRED" "ADB DND transition, explicit UI refresh, and restoration passed; ring-volume automation was unavailable on this device." @(
+            (Join-Path $script:ArtifactRoot "screenshots\02b-after-dnd-change.png")
+        )
     } else {
-        Add-Outcome "foreground-observation" "FAIL" "AUTOMATED_ADB" "The foreground volume transition was not observed."
+        Add-Outcome "foreground-observation" "MANUAL_REQUIRED" "MANUAL_REQUIRED" "Safe ADB volume and DND transitions were unavailable; physical/OEM controls are required."
     }
 }
 
