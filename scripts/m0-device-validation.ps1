@@ -636,7 +636,7 @@ function Invoke-ForegroundObservationScenario {
                 }
                 if (-not $volumeObservedAutomatically) {
                     $staleUi = Capture-UiHierarchy -Name "02-before-manual-refresh"
-                    Invoke-UiTextTap -UiXml $staleUi -TextPattern "Refresh|Atualizar|Actualizar"
+                    Invoke-UiTextTap -UiXml $staleUi -TextPattern "Check again|Verificar novamente|Comprobar de nuevo"
                     Wait-Until -FailureMessage "Foreground UI did not reflect STREAM_RING=$target after explicit refresh." -Condition {
                         $candidate = Capture-UiHierarchy -Name "02-after-volume-change"
                         if ($candidate -match "(?:Ringtone|Toque|Tono):\s*$target\s*/\s*$($originalVolume.Maximum)") {
@@ -700,7 +700,7 @@ function Invoke-ForegroundObservationScenario {
                     }
                     if (-not $dndObservedAutomatically) {
                         $staleUi = Capture-UiHierarchy -Name "02b-before-manual-refresh"
-                        Invoke-UiTextTap -UiXml $staleUi -TextPattern "Refresh|Atualizar|Actualizar"
+                        Invoke-UiTextTap -UiXml $staleUi -TextPattern "Check again|Verificar novamente|Comprobar de nuevo"
                         Wait-Until -FailureMessage "Foreground UI did not reflect DND after explicit refresh." -Condition {
                             $candidate = Capture-UiHierarchy -Name "02b-after-dnd-change"
                             $expected = if ($targetDnd -eq "priority") {
