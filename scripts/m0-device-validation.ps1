@@ -518,11 +518,17 @@ function Invoke-UiTextTap {
         [Parameter(Mandatory)] [string]$TextPattern
     )
 
-    $center = Get-UiNodeCenter -UiXml $UiXml -TextPattern $TextPattern
-    if (-not $center) {
-        throw "Could not locate a UI control matching '$TextPattern'."
+    $candidate = $UiXml
+    for ($attempt = 0; $attempt -lt 5; $attempt++) {
+        $center = Get-UiNodeCenter -UiXml $candidate -TextPattern $TextPattern
+        if ($center -and $center.Y -lt 2200) {
+            Invoke-AdbText -Arguments @("shell", "input", "tap", $center.X.ToString(), $center.Y.ToString()) | Out-Null
+            return
+        }
+        Invoke-AdbText -Arguments @("shell", "input", "swipe", "500", "1800", "500", "700", "250") | Out-Null
+        $candidate = Capture-UiHierarchy -Name "ui-text-tap-scroll-$attempt"
     }
-    Invoke-AdbText -Arguments @("shell", "input", "tap", $center.X.ToString(), $center.Y.ToString()) | Out-Null
+    throw "Could not locate a UI control matching '$TextPattern'."
 }
 
 function Invoke-ControlledWriteScenario {
