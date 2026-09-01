@@ -29,10 +29,15 @@ Exit criteria:
 
 ## M1 — Foundation
 
+Status on 2026-09-01: **complete**. The foundation created during M0/M0B passed a gap audit. Hilt, DataStore,
+Coroutines/StateFlow, Material 3 Adaptive layouts, and module splitting were not added without a present requirement;
+their triggers are documented instead. The remaining Gradle 10 deprecation is emitted internally by detekt 1.23.8
+and is tracked for a compatible plugin upgrade rather than suppressed.
+
 - Android project scaffold;
 - Kotlin/Compose/Material 3;
 - target API 36;
-- Hilt, Coroutines/Flow, DataStore;
+- dependency injection, async state, and persistence only when required by a real feature;
 - domain contracts and first pure tests;
 - Spotless+ktlint, detekt, Android Lint;
 - CI/security baseline;

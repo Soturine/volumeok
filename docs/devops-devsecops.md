@@ -67,6 +67,10 @@ Use:
 - Gradle dependency verification (checksums/signatures);
 - Dependabot as intelligence, not automatic authority.
 
+M1 uses exact versions in a Version Catalog and centralized repositories with project repositories rejected. Locking
+or verification metadata must be added before release qualification, when the resolved release graph can be reviewed;
+their absence in the current pre-release baseline is explicit and must not be described as an active control.
+
 Do not auto-merge dependency PRs blindly.
 
 ## GitHub Actions security

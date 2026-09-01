@@ -87,7 +87,7 @@ Controls:
 ### Supply-chain compromise
 Controls:
 - minimal dependencies;
-- Gradle dependency verification;
+- pinned version-catalog dependencies now, with Gradle verification metadata required before release qualification;
 - lock/version catalog strategy;
 - GitHub dependency review/Dependabot/CodeQL as applicable;
 - Actions pinned by full SHA when practical;

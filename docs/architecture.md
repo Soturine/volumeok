@@ -138,7 +138,7 @@ Do not create this split on day one merely to look sophisticated.
 Presentation uses **MVVM + unidirectional data flow**.
 
 ```text
-UserEvent → ViewModel → UseCase → Domain/Port → Result → StateFlow → UI
+UserEvent → ViewModel → UseCase → Domain/Port → Result → observable UI state → UI
 ```
 
 UI state should be immutable and screen-specific.
@@ -151,6 +151,9 @@ Classify state:
 - runtime protection state.
 
 Do not put all of them into one global mutable singleton.
+
+The current synchronous M1 surface uses Compose `mutableStateOf` in a screen ViewModel. Coroutines/StateFlow should be
+introduced when asynchronous playback, persistence, or event streams require them, not as an unused abstraction.
 
 ## Persistence
 
@@ -253,6 +256,10 @@ platform/audio/    AudioManager, NotificationManager and foreground observer ada
 
 The composition root is `MainActivity`. It wires `AndroidSoundStateAdapter` and a foreground-only
 `SoundSettingsObserver` to `HomeViewModel`. No Android type enters the domain package.
+
+The explicit composition root is sufficient for the current object graph. Hilt and a Gradle module split are deferred
+until dependency-graph complexity or build/ownership boundaries justify their cost. DataStore is also deferred because
+M1 has no genuine persistent preference yet.
 
 There is no persistence or continuous runtime in M0. Runtime protection is always reported as `STOPPED`. The observer
 is an experimental UI refresh signal, not a background-protection mechanism; ADR-004 records the deferred decision.

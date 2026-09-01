@@ -22,6 +22,17 @@ PowerShell/ADB evidence harness. A Motorola Edge 30 Fusion running Android 14/AP
   screenshots, connected tests, structured outcomes, and ignored raw artifacts.
 - Spotless/ktlint, detekt, Android Lint, unit-test, assemble, CI, CodeQL, and Dependabot configuration.
 
+## M1 foundation audit
+
+M1 is **complete**. The single-module package boundaries remain clean, Android APIs stay behind adapters, localized
+resources have matching EN/PT-BR/ES keys, and the current manual composition root is proportionate. Hilt, DataStore,
+Coroutines/StateFlow, Material 3 Adaptive layouts, and module splitting remain deferred until a feature creates a real
+need. Dependency versions are pinned in the version catalog with centralized repositories; verification metadata is a
+pre-release supply-chain gate rather than a claim of the current baseline.
+
+Gradle 9.5 reports one Gradle 10 deprecation from detekt 1.23.8 (`ReportingExtension.file(String)`). It does not
+originate in project-controlled build configuration and is retained visibly pending a compatible detekt upgrade.
+
 ## Physically verified on the Motorola test device
 
 - Public Android APIs returned valid ringtone, ringer-mode, DND, and output-device-presence evidence.

@@ -24,6 +24,11 @@ feasibility baseline; entries under `Unreleased` are not production claims.
 - Physical instrumentation for public sound-state reads and controlled write/readback/restoration, with a safety guard
   that refuses automated writes from zero volume because zero may represent deliberate silence.
 
+### Changed
+
+- Completed the M1 foundation gap audit without adding unused Hilt, DataStore, coroutine, Adaptive, or module-split
+  machinery; documented their real adoption triggers and the deferred dependency-verification release gate.
+
 ### Fixed
 
 - Made the M0B harness compatible with UTF-8 UI text under Windows PowerShell 5.1 and restored the debug app after

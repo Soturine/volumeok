@@ -40,16 +40,16 @@ Instead of being another generic volume panel, booster, or automation suite, Vol
 - AI/LLM decision-making for readiness or protection.
 - Re-creating Tasker/MacroDroid or a full profile automation suite.
 
-## Proposed Android stack
+## Android stack
 
 - **Kotlin**
 - **Jetpack Compose + Material 3**
-- **Material 3 Adaptive**
+- **Material 3**, with Adaptive components deferred until M5 layouts require them
 - **MVVM + unidirectional data flow** for presentation
 - **Pragmatic Clean / Ports & Adapters** around Android platform APIs
-- **Coroutines + StateFlow**
-- **Hilt** for dependency injection
-- **DataStore** for policies/preferences; Room only if persistent history earns its complexity
+- synchronous UDF state for the current small surface; **Coroutines/StateFlow** only when asynchronous work requires it
+- explicit composition in `MainActivity`; **Hilt** is deferred until object-graph complexity justifies it
+- **DataStore** when a real persistent policy/preference is introduced; Room only if history earns its complexity
 - **Gradle Kotlin DSL**
 - `targetSdk = 36` from the first Android scaffold
 - proposed `minSdk = 26`, to be validated against target-user reach before freezing
