@@ -24,6 +24,11 @@ feasibility baseline; entries under `Unreleased` are not production claims.
 - Physical instrumentation for public sound-state reads and controlled write/readback/restoration, with a safety guard
   that refuses automated writes from zero volume because zero may represent deliberate silence.
 
+### Fixed
+
+- Made the M0B harness compatible with UTF-8 UI text under Windows PowerShell 5.1 and restored the debug app after
+  Android instrumentation removes it, so subsequent physical UI scenarios can run against the same APK.
+
 ### Status
 
 - M0 remains **partial / awaiting device validation**. No continuous-protection, OEM-compatibility, background-runtime,

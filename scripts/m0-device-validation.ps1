@@ -30,6 +30,7 @@ $script:ManualChecks = [System.Collections.Generic.List[string]]::new()
 $script:InstrumentationResult = $null
 $script:StateRestorationFailed = $false
 $script:ArtifactRoot = $null
+$script:ApkPath = $null
 $script:ApkHash = $null
 $script:SourceSha = $null
 $script:OriginSha = $null
@@ -270,6 +271,7 @@ function Build-And-Install {
     if (-not (Test-Path -LiteralPath $apkPath)) {
         throw "Debug APK was not created at $apkPath"
     }
+    $script:ApkPath = $apkPath
     $script:ApkHash = (Get-FileHash -LiteralPath $apkPath -Algorithm SHA256).Hash
     Write-Utf8File -Path (Join-Path $script:ArtifactRoot "apk-sha256.txt") -Content "$($script:ApkHash)  app-debug.apk"
 
@@ -326,6 +328,20 @@ function Start-VolumeOk {
     }
 }
 
+function Restore-AppAfterInstrumentation {
+    $installed = Invoke-AdbText -Arguments @("shell", "pm", "path", $script:PackageName) -AllowFailure
+    if ($installed.ExitCode -eq 0 -and $installed.Output.Trim()) {
+        return
+    }
+    if ($SkipInstall) {
+        throw "The instrumentation task removed the app, and -SkipInstall prevents restoring it for UI scenarios."
+    }
+    $install = Invoke-AdbText -Arguments @("install", "-r", $script:ApkPath)
+    if ($install.Output -notmatch "Success") {
+        throw "Could not restore the app after instrumentation: $($install.Output)"
+    }
+}
+
 function Capture-UiHierarchy {
     param([Parameter(Mandatory)] [string]$Name)
 
@@ -365,8 +381,9 @@ settings.global.zen_mode=$($zenMode.Trim())
 
 function Test-StoppedRuntimeTruth {
     param([Parameter(Mandatory)] [string]$UiXml)
-    $stopped = $UiXml -match "Protection runtime:\s*Stopped|Proteção em execução:\s*Parada|Protección en ejecución:\s*Detenida"
-    $active = $UiXml -match "Protection runtime:\s*Active|Proteção em execução:\s*Ativa|Protección en ejecución:\s*Activa"
+    # Keep source literals ASCII-only so Windows PowerShell 5.1 parses this UTF-8 file consistently.
+    $stopped = $UiXml -match "Protection runtime:\s*Stopped|:\s*Parada|:\s*Detenida"
+    $active = $UiXml -match "Protection runtime:\s*Active|:\s*Ativa|:\s*Activa"
     $stopped -and -not $active
 }
 
@@ -423,6 +440,7 @@ function Invoke-InstrumentedSuiteOnce {
         Output = $result.Output
         Log = $tagLog.Output
     }
+    Restore-AppAfterInstrumentation
     $script:InstrumentationResult
 }
 
@@ -461,7 +479,7 @@ function Invoke-ControlledWriteScenario {
     Start-VolumeOk
     $original = Get-RingVolumeState
     $ui = Capture-UiHierarchy -Name "03-before-controlled-test"
-    $center = Get-UiNodeCenter -UiXml $ui -TextPattern "Controlled one-step test|Teste controlado de um nível|Prueba controlada de un nivel"
+    $center = Get-UiNodeCenter -UiXml $ui -TextPattern "Controlled one-step test|Teste controlado de um n.vel|Prueba controlada de un nivel"
     if (-not $center) {
         Add-Outcome "controlled-write" "PARTIAL" "AUTOMATED_INSTRUMENTED" "Read/write/restore instrumentation passed, but the UI button could not be located." @($instrumented.OutputPath, $instrumented.LogPath)
         return
@@ -471,7 +489,7 @@ function Invoke-ControlledWriteScenario {
     $resultUi = $null
     Wait-Until -FailureMessage "Controlled-test result did not appear in the UI." -Condition {
         $candidate = Capture-UiHierarchy -Name "03-after-controlled-test"
-        if ($candidate -match "Write verified by readback|Alteração verificada por releitura|Cambio verificado por relectura") {
+        if ($candidate -match "Write verified by readback|verificada por releitura|Cambio verificado por relectura") {
             $script:ResultUiBuffer = $candidate
             return $true
         }
@@ -565,7 +583,7 @@ function Invoke-ForegroundObservationScenario {
                     $expected = if ($targetDnd -eq "priority") {
                         "Priority only|Somente prioridade|Solo prioridad"
                     } else {
-                        "Do Not Disturb:\s*Off|Não Perturbe:\s*Desativado|No molestar:\s*Desactivado"
+                        "Do Not Disturb:\s*Off|Perturbe:\s*Desativado|No molestar:\s*Desactivado"
                     }
                     if ($candidate -match $expected) {
                         return $true
