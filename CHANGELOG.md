@@ -37,6 +37,8 @@ feasibility baseline; entries under `Unreleased` are not production claims.
   higher steps may be ready only when all other mandatory evidence is healthy.
 - Updated the physical harness for the product Diagnose surface while keeping engineering controls behind expandable
   details and treating accidental-silence protection as unavailable, never active.
+- Updated checkout, Java, Gradle, and CodeQL workflow actions to current Node 24-capable releases while retaining full
+  commit-SHA pins.
 
 ### Fixed
 
