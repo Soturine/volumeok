@@ -165,6 +165,19 @@ A release is not qualified by “tests passed” alone. Required evidence includ
 
 ## M0 executable evidence
 
+For a connected physical device on Windows, use the M0B entry point:
+
+```powershell
+.\scripts\m0-device-validation.ps1 -Serial <adb-serial>
+```
+
+The harness validates authorization and exact source synchronization, builds and installs the debug APK, records its
+SHA-256, runs bounded scenarios and physical instrumentation, verifies mutable-state restoration, and writes structured
+evidence below the gitignored `artifacts/m0/` directory. `PASS` means only the named assertion passed. `PARTIAL` and
+`MANUAL_REQUIRED` must remain visible; they cannot be promoted to device support.
+
+See [`testing-m0b.md`](testing-m0b.md) for scenario selection, safety behavior, output layout, and manual boundaries.
+
 The current local/CI gate is:
 
 ```text
@@ -175,6 +188,6 @@ Pure unit tests cover readiness composition and false-green negative paths, prot
 controllable clock, inactive runtime after restart, the `70 → 0 → 70 → 0 → 70 → 0` oscillation pattern, ineffective
 writes, safe non-maximum targets, fresh readback, and restoration.
 
-`compileDebugAndroidTestKotlin` proves the Android read-contract test compiles. It is not device evidence. Run
-`connectedDebugAndroidTest` only with an attached test device, then record actual results in
-`docs/evidence/M0-device-matrix.md`; never translate a compiled or emulator-only test into an OEM claim.
+`compileDebugAndroidTestKotlin` proves only that Android tests compile. `connectedDebugAndroidTest` must run on the
+named attached device before it becomes device evidence. The 2026-09-01 Motorola run is recorded in
+`docs/evidence/M0-device-matrix.md`; it does not establish behavior on another build, model, or OEM.

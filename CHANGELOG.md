@@ -33,5 +33,7 @@ feasibility baseline; entries under `Unreleased` are not production claims.
 
 ### Status
 
-- M0 remains **partial / awaiting device validation**. No continuous-protection, OEM-compatibility, background-runtime,
-  Quick Settings, or production-readiness claim has been established.
+- M0 remains **partial with one-device Motorola evidence**. Public reads, controlled write/readback/restoration,
+  force-stop/reopen truth, and physical instrumentation passed; foreground observation is partial. No broad
+  OEM-compatibility, continuous-protection, background-runtime, Quick Settings, or production-readiness claim has been
+  established.

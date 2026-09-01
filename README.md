@@ -118,6 +118,7 @@ The **domain must not depend directly on `AudioManager`, `NotificationManager`, 
 - [`docs/benchmark.md`](docs/benchmark.md) — competitor and market benchmark snapshot.
 - [`docs/ux-design.md`](docs/ux-design.md) — UX, accessibility, responsive/adaptive rules, fox mascot and microinteractions.
 - [`docs/testing.md`](docs/testing.md) — risk-driven QA strategy and OEM/device matrix.
+- [`docs/testing-m0b.md`](docs/testing-m0b.md) — local physical-device harness usage and evidence boundaries.
 - [`docs/threat-model.md`](docs/threat-model.md) — security/privacy/safety model.
 - [`docs/devops-devsecops.md`](docs/devops-devsecops.md) — CI/CD, supply chain, release and security gates.
 - [`docs/observability-aiops-llmops.md`](docs/observability-aiops-llmops.md) — proportional observability and explicit AI/AIOps scope.
@@ -127,12 +128,14 @@ The **domain must not depend directly on `AudioManager`, `NotificationManager`, 
 
 ## Current status
 
-**Status: M0 partial / awaiting physical-device validation.**
+**Status: M0 partial / one-device physical evidence.**
 
 The repository contains an executable diagnostic foundation, domain invariants, Android public-API adapters, a minimal
-Compose UI, and local/remote quality gates. No physical Android device was available during the automated M0 run, so
-continuous protection, cross-OEM behavior, background reliability, battery impact, Quick Settings, and Play readiness
-remain unvalidated. See [`docs/current-state.md`](docs/current-state.md) and the
+Compose UI, local/remote quality gates, and a reproducible PowerShell/ADB harness. A Motorola Edge 30 Fusion running
+Android 14/API 34 passed the baseline, controlled write/readback/restoration, force-stop/reopen, and connected-test
+scenarios on an exact source SHA. Foreground observation remains partial, and continuous protection, cross-OEM
+behavior, background reliability, battery impact, Quick Settings, and Play readiness remain unvalidated. See
+[`docs/current-state.md`](docs/current-state.md) and the
 [`M0 device matrix`](docs/evidence/M0-device-matrix.md).
 
 ## Build and verify

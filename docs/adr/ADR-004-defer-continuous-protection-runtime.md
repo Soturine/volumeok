@@ -23,10 +23,16 @@ ADR-003 remains the governing feasibility gate. This ADR must be superseded only
 evidence measures event reliability, process death, user-visible lifecycle, immediate stop behavior, battery/wakeups,
 and OEM restrictions.
 
+## Evidence update — 2026-09-01
+
+A Motorola Edge 30 Fusion physical run proved public reads, controlled write/readback/restoration, and truthful
+`STOPPED` state after force-stop/reopen. It did not exercise a background runtime. Safe ADB foreground transitions were
+only partial: DND needed explicit UI refresh, and the OEM shell path did not change ringtone volume. This evidence
+reinforces rather than supersedes the deferred decision.
+
 ## Consequences
 
 - M0 remains partial rather than falsely complete.
 - Diagnose/readback work can proceed independently.
 - Continuous protection, automatic restart, and Quick Settings remain unavailable in product copy and UI.
 - A later accepted ADR must select a mechanism or explicitly narrow/remove the protection promise based on evidence.
-
