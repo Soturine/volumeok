@@ -7,3 +7,4 @@ captures/
 .externalNativeBuild/
 .cxx/
 gradle/gradle-daemon-jvm.properties
+artifacts/m0/
