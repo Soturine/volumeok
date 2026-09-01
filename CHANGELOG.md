@@ -23,11 +23,20 @@ feasibility baseline; entries under `Unreleased` are not production claims.
   scenarios, state restoration checks, screenshots, sanitized diagnostics, and ignored per-run reports.
 - Physical instrumentation for public sound-state reads and controlled write/readback/restoration, with a safety guard
   that refuses automated writes from zero volume because zero may represent deliberate silence.
+- Product-quality Diagnose home with plain-language issue copy, optional diagnostic details, accessible full-width
+  actions, and a supported one-step low-volume correction verified by fresh readback.
+- Guided local safe-sound test with explicit start/retry/stop controls, bounded platform-derived steps below maximum,
+  lifecycle cancellation, no microphone or Internet dependency, and user-confirmed outcomes.
+- Focused domain, correction, Compose UI, and physical Android tests for M2/M3 decisions and safety boundaries.
 
 ### Changed
 
 - Completed the M1 foundation gap audit without adding unused Hilt, DataStore, coroutine, Adaptive, or module-split
   machinery; documented their real adoption triggers and the deferred dependency-verification release gate.
+- Defined the M2 low-volume rule: zero requires action, the lowest non-zero platform step requires attention, and
+  higher steps may be ready only when all other mandatory evidence is healthy.
+- Updated the physical harness for the product Diagnose surface while keeping engineering controls behind expandable
+  details and treating accidental-silence protection as unavailable, never active.
 
 ### Fixed
 

@@ -5,6 +5,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.soturine.volumeok.application.ControlledRingVolumeTest
 import com.soturine.volumeok.application.ControlledTestStatus
+import com.soturine.volumeok.application.CorrectLowRingVolume
+import com.soturine.volumeok.application.LowRingVolumeCorrectionStatus
 import com.soturine.volumeok.domain.CapabilityStatus
 import com.soturine.volumeok.domain.ReadinessEvaluator
 import com.soturine.volumeok.domain.Reading
@@ -16,6 +18,7 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -75,6 +78,27 @@ class AndroidSoundStateAdapterTest {
             val finalRingerMode = finalSnapshot.ringerMode.availableOrFail("restored ringer mode")
             assertEquals("ring volume restoration after $reportStatus", initialVolume.current, finalVolume.current)
             assertEquals("ringer mode restoration after $reportStatus", initialRingerMode, finalRingerMode)
+        }
+    }
+
+    @Test
+    fun lowVolumeProductCorrectionUsesFreshReadback() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val adapter = AndroidSoundStateAdapter(context)
+        val initialVolume = adapter.read().availableOrFail("initial ring volume")
+        assumeTrue("requires lowest non-zero ringtone step", initialVolume.current == 1)
+        assumeTrue("requires a safe step below maximum", initialVolume.maximum > 2)
+
+        try {
+            val report = CorrectLowRingVolume(adapter).execute()
+
+            assertEquals(LowRingVolumeCorrectionStatus.EFFECTIVE, report.status)
+            assertEquals(1, report.original)
+            assertEquals(2, report.requested)
+            assertEquals(2, report.observedAfterWrite)
+        } finally {
+            adapter.write(initialVolume.current)
+            assertEquals(initialVolume.current, adapter.read().availableOrFail("restored ring volume").current)
         }
     }
 

@@ -61,10 +61,14 @@ ProtectionRuntimeState
 1. `READY` requires sufficient evidence for every capability considered mandatory for the current product version.
 2. Missing permission, unsupported API, OEM ambiguity, or failed read must not become `READY`; use `UNKNOWN` or degraded issue(s).
 3. Silent ringer mode is at least `ACTION_REQUIRED` unless the user has explicitly entered a temporary intentional-silence flow that the UI communicates as such.
-4. Ringtone volume below the configured readiness threshold is an actionable issue.
+4. Until a user-configured threshold is introduced, ringtone `0` is `ACTION_REQUIRED`, the lowest non-zero platform
+   step (`1`) is `ATTENTION`, and `2+` has no volume-level issue. This ordinal rule avoids pretending OEM percentages
+   are acoustically equivalent; ADR-005 records the decision.
 5. DND cannot be inferred only from ring volume.
 6. Audio-route claims must reflect evidence quality. “Bluetooth connected” and “ring audio is definitely routed to Bluetooth” are different claims.
 7. Readiness is re-evaluated after every user-triggered correction; success is based on a fresh snapshot, not only on setter completion.
+8. `READY` describes current public sound-setting evidence. It does not prove human audibility, call delivery, carrier
+   behavior, or active routing.
 
 ## Protection invariants
 
@@ -86,6 +90,8 @@ ProtectionRuntimeState
 4. User can stop the test immediately.
 5. Successful playback does not prove telephony/carrier behavior; wording must be limited to what was tested.
 6. Test completion is based on user confirmation and/or verified local playback state, not a fake timeout-only success.
+7. The M3 local-tone test does not mutate the system ringtone volume; its generated-tone gain progresses only through
+   platform-derived steps below maximum, so there is no temporary system volume to restore.
 
 ## Temporary override rules
 

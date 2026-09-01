@@ -394,14 +394,49 @@ function Test-StoppedRuntimeTruth {
     param([Parameter(Mandatory)] [string]$UiXml)
     # Keep source literals ASCII-only so Windows PowerShell 5.1 parses this UTF-8 file consistently.
     $stopped = $UiXml -match "Protection runtime:\s*Stopped|:\s*Parada|:\s*Detenida"
+    $unavailable = $UiXml -match "Accidental-silence protection is not available yet|prote..o contra sil.ncio acidental ainda n.o est. dispon.vel|protecci.n contra el silencio accidental a.n no est. disponible"
     $active = $UiXml -match "Protection runtime:\s*Active|:\s*Ativa|:\s*Activa"
-    $stopped -and -not $active
+    ($stopped -or $unavailable) -and -not $active
+}
+
+function Expand-DiagnosticDetails {
+    param(
+        [Parameter(Mandatory)] [string]$UiXml,
+        [Parameter(Mandatory)] [string]$CaptureName
+    )
+
+    if (Test-StoppedRuntimeTruth -UiXml $UiXml) {
+        return $UiXml
+    }
+    $pattern = "Show diagnostic details|Mostrar detalhes do diagn.stico|Mostrar detalles del diagn.stico"
+    $candidate = $UiXml
+    for ($attempt = 0; $attempt -lt 5; $attempt++) {
+        $center = Get-UiNodeCenter -UiXml $candidate -TextPattern $pattern
+        if ($center -and $center.Y -lt 2100) {
+            Invoke-AdbText -Arguments @("shell", "input", "tap", $center.X.ToString(), $center.Y.ToString()) | Out-Null
+            break
+        }
+        Invoke-AdbText -Arguments @("shell", "input", "swipe", "500", "1800", "500", "700", "250") | Out-Null
+        $candidate = Capture-UiHierarchy -Name "$CaptureName-scroll-$attempt"
+    }
+    Wait-Until -FailureMessage "Diagnostic details did not become visible." -Condition {
+        $expanded = Capture-UiHierarchy -Name $CaptureName
+        if (Test-StoppedRuntimeTruth -UiXml $expanded) {
+            $script:ExpandedUiBuffer = $expanded
+            return $true
+        }
+        $false
+    }
+    $result = $script:ExpandedUiBuffer
+    Remove-Variable -Name ExpandedUiBuffer -Scope Script -ErrorAction SilentlyContinue
+    $result
 }
 
 function Invoke-BaselineScenario {
     Start-VolumeOk
     $systemPath = Capture-SystemState -Name "audio-before"
     $ui = Capture-UiHierarchy -Name "01-baseline"
+    $ui = Expand-DiagnosticDetails -UiXml $ui -CaptureName "01-baseline-details"
     $screenshot = Capture-Screenshot -Name "01-baseline"
     if (-not (Test-StoppedRuntimeTruth -UiXml $ui)) {
         Add-Outcome "baseline" "FAIL" "AUTOMATED_ADB" "UI did not prove runtime STOPPED without ACTIVE." @($systemPath, $screenshot)
@@ -409,9 +444,10 @@ function Invoke-BaselineScenario {
     }
 
     $volume = Get-RingVolumeState
-    $ready = $ui -match "\bReady\b|\bPronto\b|\bListo\b"
+    $ready = $ui -match "Everything looks ready|Tudo parece pronto|Todo parece listo"
     if ($volume.Current -eq 1 -and $ready) {
-        $script:Warnings.Add("Volume 1/$($volume.Maximum) rendered READY; product threshold review remains required.")
+        Add-Outcome "baseline" "FAIL" "AUTOMATED_PUBLIC_API+AUTOMATED_ADB" "Lowest non-zero ringtone volume incorrectly rendered READY." @($systemPath, $screenshot)
+        return
     }
     Add-Outcome "baseline" "PASS" "AUTOMATED_PUBLIC_API+AUTOMATED_ADB" "App launched with fresh evidence and truthful STOPPED runtime." @($systemPath, $screenshot)
 }
@@ -503,7 +539,17 @@ function Invoke-ControlledWriteScenario {
     Start-VolumeOk
     $original = Get-RingVolumeState
     $ui = Capture-UiHierarchy -Name "03-before-controlled-test"
-    $center = Get-UiNodeCenter -UiXml $ui -TextPattern "Controlled one-step test|Teste controlado de um n.vel|Prueba controlada de un nivel"
+    $ui = Expand-DiagnosticDetails -UiXml $ui -CaptureName "03-diagnostic-details"
+    $buttonPattern = "Controlled one-step test|Teste controlado de um n.vel|Prueba controlada de un nivel"
+    $center = $null
+    for ($attempt = 0; $attempt -lt 5; $attempt++) {
+        $center = Get-UiNodeCenter -UiXml $ui -TextPattern $buttonPattern
+        if ($center -and $center.Y -lt 2200) {
+            break
+        }
+        Invoke-AdbText -Arguments @("shell", "input", "swipe", "500", "1800", "500", "700", "250") | Out-Null
+        $ui = Capture-UiHierarchy -Name "03-controlled-scroll-$attempt"
+    }
     if (-not $center) {
         Add-Outcome "controlled-write" "PARTIAL" "AUTOMATED_INSTRUMENTED" "Read/write/restore instrumentation passed, but the UI button could not be located." @($instrumented.OutputPath, $instrumented.LogPath)
         return
@@ -731,6 +777,7 @@ function Invoke-ForceStopScenario {
     }
     Start-VolumeOk
     $ui = Capture-UiHierarchy -Name "04-after-restart"
+    $ui = Expand-DiagnosticDetails -UiXml $ui -CaptureName "04-after-restart-details"
     $screenshot = Capture-Screenshot -Name "04-after-restart"
     if (Test-StoppedRuntimeTruth -UiXml $ui) {
         Add-Outcome "force-stop-reopen" "PASS" "AUTOMATED_ADB" "Force-stop/reopen produced fresh UI with runtime STOPPED." @($screenshot)
