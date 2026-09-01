@@ -41,6 +41,16 @@ class ControlledRingVolumeTestTest {
     }
 
     @Test
+    fun `zero volume is not changed because it may represent intentional silence`() {
+        val gateway = StatefulGateway(current = 0, maximum = 7, writesAreEffective = true)
+
+        val report = ControlledRingVolumeTest(gateway).execute()
+
+        assertEquals(ControlledTestStatus.NO_SAFE_TEST_CHANGE, report.status)
+        assertEquals(emptyList<Int>(), gateway.writes)
+    }
+
+    @Test
     fun `unknown initial read fails visibly`() {
         val gateway =
             object : RingVolumeGateway {

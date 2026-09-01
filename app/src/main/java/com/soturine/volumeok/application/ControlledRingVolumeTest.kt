@@ -79,7 +79,7 @@ class ControlledRingVolumeTest(private val gateway: RingVolumeGateway) {
 
     private fun safeTarget(volume: RingVolume): Int? = when {
         volume.maximum <= 1 -> null
-        volume.current == 0 -> 1
+        volume.current == 0 -> null
         volume.current >= volume.maximum - 1 -> volume.current - 1
         else -> volume.current + 1
     }

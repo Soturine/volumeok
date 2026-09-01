@@ -21,6 +21,8 @@ feasibility baseline; entries under `Unreleased` are not production claims.
   refresh, and foreground-only change observation.
 - Local PowerShell M0B harness with ADB device/source preflight, safe build/install orchestration, structured physical
   scenarios, state restoration checks, screenshots, sanitized diagnostics, and ignored per-run reports.
+- Physical instrumentation for public sound-state reads and controlled write/readback/restoration, with a safety guard
+  that refuses automated writes from zero volume because zero may represent deliberate silence.
 
 ### Status
 
