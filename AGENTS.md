@@ -24,20 +24,20 @@ If docs conflict, prefer the most specific accepted ADR for technical decisions 
 
 ## Current project phase
 
-**Pre-code / M0 feasibility.**
+**M0C physical qualification is partial; M1 is complete; M2 Diagnose is complete in current scope; M3 Safe Test is experimental/partial. M4 continuous protection remains blocked by ADR-004.**
 
-Do not claim protection, DND correction, Quick Settings integration, background reliability, OEM compatibility, or Play readiness until evidence exists.
+Do not claim continuous protection, DND correction, Quick Settings active protection, background reliability, broad OEM compatibility, or Play readiness until evidence exists.
 
 ## Architecture rules
 
-- Kotlin + Jetpack Compose + Material 3/Adaptive.
+- Kotlin + Jetpack Compose + Material 3/Adaptive when earned by current UI needs.
 - Presentation: MVVM + UDF.
 - Domain/application code must not depend directly on Android framework classes.
 - Android APIs live behind explicit ports/adapters.
 - Prefer package/module boundaries by feature/domain; avoid premature Gradle-module explosion.
 - No generic `Utils`, `Manager`, or God-Service dumping grounds.
 - Entry points are composition/bootstrap, not business logic.
-- DataStore first for settings/policy; Room only when persistent history earns it.
+- DataStore only when real persisted settings/policy require it; Room only when persistent history earns it.
 - No backend, account system, cloud sync, LLM, or analytics SDK in MVP without a new ADR and threat/privacy review.
 
 ## Core invariants
@@ -54,6 +54,7 @@ Never violate these:
 - Do not infer causality that platform evidence cannot prove.
 - Missing permission is a capability limitation, not success.
 - AccessibilityService is not an implementation shortcut.
+- `READY` means current evidence indicates a ring-capable configuration; it does not guarantee human audibility or future call delivery.
 
 ## Workflow
 
@@ -68,9 +69,45 @@ For each task:
 7. Review the diff for AI slop, dead code, placeholders, stale docs, and claims without proof.
 8. Make a logical commit.
 9. Push the commit to the remote repository when credentials allow.
-10. Continue independent work while remote CI runs; checkpoint remote failures between milestones.
+10. Immediately continue independent work while remote CI/security runs.
+11. Check remote state once at meaningful milestone/checkpoint boundaries using a non-blocking status query.
+12. Fix completed real failures early; if checks are queued/in-progress, record them as pending and keep working when safe.
 
-Do not wait on remote CI if another independent task can proceed safely.
+### Non-blocking CI rule
+
+During normal development, remote CI is asynchronous evidence, not a synchronous step in the inner loop.
+
+**Forbidden during normal development:**
+
+- `gh run watch`;
+- any command whose purpose is to block until GitHub Actions finishes;
+- continuous/looped polling of CI, CodeQL, Dependabot, or other remote gates;
+- repeatedly querying the same in-progress workflow with no new decision to make;
+- rerunning a broad local suite merely because remote CI is still running.
+
+Preferred pattern:
+
+```text
+focused test
+→ logical commit
+→ push
+→ remote CI starts
+→ continue next independent task
+→ non-blocking checkpoint at milestone boundary
+```
+
+A checkpoint query must return promptly. If the remote run is `queued` or `in_progress`, record `pending` and continue useful independent work.
+
+Blocking/waiting for remote gates is appropriate only at the **final qualification/release checkpoint**, when:
+
+- scope is frozen;
+- the candidate SHA has already been pushed;
+- no useful independent implementation work remains before the release decision;
+- tag/release eligibility depends on those exact gates.
+
+Even at final qualification, avoid tight polling loops; use bounded/manual checkpoints or a single wait only when it is genuinely the remaining gate.
+
+A green run from an older SHA is not evidence for the current SHA. Superseded runs do not need to be awaited unless they provide a concrete failure signal worth investigating.
 
 ## Definition of Done
 
@@ -87,9 +124,9 @@ Required as applicable:
 - docs/ADR are updated when behavior or architecture changes;
 - no relevant TODO/placeholder/fake implementation remains;
 - commit is pushed remotely;
-- required CI/security gates are green for the exact SHA.
+- required CI/security gates are green for the exact SHA at the relevant milestone/release gate.
 
-Use honest status labels: `fixed`, `partial`, `experimental`, `deferred`, `not validated`.
+Use honest status labels: `fixed`, `partial`, `experimental`, `deferred`, `blocked`, `not validated`.
 
 ## Testing rules
 
@@ -97,9 +134,11 @@ Use honest status labels: `fixed`, `partial`, `experimental`, `deferred`, `not v
 - Do not mock the behavior under test.
 - Prefer deterministic fakes for platform-independent domain tests and real Android instrumentation for platform contracts.
 - No arbitrary sleeps; wait for state.
+- Bounded synchronization polling in tests is acceptable when no stronger signal exists; production polling loops are not.
 - Flaky tests are defects.
 - Critical logic should include negative controls/property tests where useful.
 - A smoke test must prove a real consequence, not merely app/process startup.
+- Do not repeat expensive/full suites after every small change. Use focused tests during development and one appropriate broader qualification near milestone/release boundaries.
 
 ## Security / privacy / safety
 
@@ -122,6 +161,8 @@ Release artifact must be the artifact validated from the exact source SHA:
 
 Do not rebuild a different artifact at tag time and call it equivalent.
 
+Do not create `v0.0.1-m0` while M0C remains insufficient for the core feasibility/runtime decision. M2/M3 code may exist on `main` before the M0 tag; release notes must describe the exact tagged SHA honestly.
+
 ## Agent discipline
 
-Generated code is untrusted draft until reviewed and tested. Do not optimize for line count, file count, test count, commit count, or architecture ceremony. Optimize for correctness, clarity, evidence, safety, and maintainability.
+Generated code is untrusted draft until reviewed and tested. Do not optimize for line count, file count, test count, commit count, or architecture ceremony. Optimize for correctness, clarity, evidence, safety, maintainability, and fast feedback.
