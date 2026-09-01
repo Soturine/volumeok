@@ -51,11 +51,12 @@ Few high-value real-device scenarios, especially OEM-specific behavior.
 
 1. Open → readiness shown from real evidence.
 2. Force low ringtone → issue appears → correction → state re-read → READY/remaining issue.
-3. Enable protection → verify runtime genuinely active.
-4. Drop below protected minimum → expected notify/restore behavior.
-5. Intentional pause → no auto-restore during pause → correct resume.
-6. Simulate rapid repeated changes → circuit breaker opens.
-7. Kill process/reboot where relevant → persisted policy and reported runtime state remain truthful.
+3. Start guided safe test → short local tone → explicit heard/not-heard path → immediate stop remains available.
+4. Enable protection → verify runtime genuinely active.
+5. Drop below protected minimum → expected notify/restore behavior.
+6. Intentional pause → no auto-restore during pause → correct resume.
+7. Simulate rapid repeated changes → circuit breaker opens.
+8. Kill process/reboot where relevant → persisted policy and reported runtime state remain truthful.
 
 ## OEM/device matrix
 
@@ -184,9 +185,12 @@ The current local/CI gate is:
 ./gradlew spotlessCheck testDebugUnitTest detekt lintDebug assembleDebug
 ```
 
-Pure unit tests cover readiness composition and false-green negative paths, protection bounds, pause expiry with a
-controllable clock, inactive runtime after restart, the `70 → 0 → 70 → 0 → 70 → 0` oscillation pattern, ineffective
-writes, safe non-maximum targets, fresh readback, and restoration.
+Pure unit tests cover readiness composition and false-green negative paths, ADR-005 low-volume semantics, correction
+readback outcomes, protection bounds, pause expiry with a controllable clock, inactive runtime after restart, the
+`70 → 0 → 70 → 0 → 70 → 0` oscillation pattern, safe-test progression below maximum, cancellation, interruption,
+stale callbacks, ineffective writes, safe non-maximum targets, fresh readback, and restoration. Compose instrumentation
+covers actionable Diagnose copy/CTA boundaries, diagnostic disclosure, explicit test start, confirmation actions, and
+outcome rendering.
 
 `compileDebugAndroidTestKotlin` proves only that Android tests compile. `connectedDebugAndroidTest` must run on the
 named attached device before it becomes device evidence. The 2026-09-01 Motorola run is recorded in

@@ -130,11 +130,12 @@ The **domain must not depend directly on `AudioManager`, `NotificationManager`, 
 
 **Status: M0 partial / one-device physical evidence.**
 
-The repository contains an executable diagnostic foundation, domain invariants, Android public-API adapters, a minimal
-Compose UI, local/remote quality gates, and a reproducible PowerShell/ADB harness. A Motorola Edge 30 Fusion running
-Android 14/API 34 passed the baseline, controlled write/readback/restoration, force-stop/reopen, and connected-test
-scenarios on an exact source SHA. Foreground observation remains partial, and continuous protection, cross-OEM
-behavior, background reliability, battery impact, Quick Settings, and Play readiness remain unvalidated. See
+The repository contains the product Diagnose experience and an experimental guided Safe Test on top of the M0/M1
+foundation. A Motorola Edge 30 Fusion running Android 14/API 34 passed exact-SHA baseline, correction/readback,
+controlled restoration, local-tone state-safety, force-stop/reopen, and connected-test scenarios. M2 is implemented;
+M3 remains partial until human audibility and accessibility checks pass. M0C foreground observation, Samsung/Pixel
+coverage, continuous protection, background reliability, battery impact, Quick Settings, and Play readiness remain
+unvalidated. See
 [`docs/current-state.md`](docs/current-state.md) and the
 [`M0 device matrix`](docs/evidence/M0-device-matrix.md).
 

@@ -51,3 +51,5 @@ feasibility baseline; entries under `Unreleased` are not production claims.
   force-stop/reopen truth, and physical instrumentation passed; foreground observation is partial. No broad
   OEM-compatibility, continuous-protection, background-runtime, Quick Settings, or production-readiness claim has been
   established.
+- M1 is **complete**; M2 Diagnose is **complete for its implemented scope and available-device evidence**; M3 Safe
+  Test is **partial/experimental** until human audibility, comfort, TalkBack, 200% font, and contrast checks pass.

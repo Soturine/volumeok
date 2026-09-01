@@ -16,17 +16,17 @@ claims. A result from one device must not be generalized to its OEM family or An
 ## Motorola evidence record
 
 - Date: 2026-09-01.
-- Source SHA: `f613c7e39b8087ab0f9662c6b3ead643cb941aca`, synchronized with `origin/main` during the run.
-- Debug APK SHA-256: `068CECCCCA8656EC1096684688F9BF8F9E18A24BAC7C409D5C616DC56F260136`.
+- Source SHA: `b70b3fc53a04ee05b7b5ec8453e7caa0ebb4d227`, synchronized with `origin/main` during both selected runs.
+- Debug APK SHA-256: `104C155A6E1396BDD0C537ADB828354C9099846363F3B1FDE440BC7B3999463E`.
 - Automated PASS: device/source preflight, baseline public-API snapshot, controlled write/readback/restoration, truthful
   `STOPPED` runtime after force-stop/reopen, and the connected instrumented suite.
 - Automated PARTIAL: ADB could set and restore priority DND, and the app showed `ACTION_REQUIRED` after explicit
   refresh. This ADB path did not prove automatic foreground notification. The OEM build accepted the shell ringtone
   command but did not change `STREAM_RING`, so physical volume-button observation remains manual.
-- Product-review warning: `1/7`, normal ringer mode, and DND off rendered `READY`. M0B records this result without
-  silently changing the business threshold.
-- Scope boundary: no sound audibility, physical-button behavior, accessibility, Bluetooth/wired route, background
-  runtime, endurance, battery, or cross-OEM claim was established.
+- M2/M3 automation: `1/7` now rendered `ATTENTION`; the product `1 -> 2` correction obtained effective fresh readback
+  and the test restored `1`; the local tone-player contract started/stopped without changing the system ringtone step.
+- Scope boundary: no human sound audibility/comfort, physical-button behavior, accessibility, Bluetooth/wired route,
+  background runtime, endurance, battery, or cross-OEM claim was established.
 
 Raw run artifacts remain local and gitignored because they include device identifiers and unsanitized screenshots.
 

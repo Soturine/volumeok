@@ -45,6 +45,11 @@ Controls:
 - no forced maximum-volume test;
 - visible protection state.
 
+The M3 sound test uses a generated local tone whose gain is derived from platform steps and remains below maximum. It
+does not write the system ringtone volume, request microphone or Internet permission, or infer audibility from player
+completion. Stop, lifecycle interruption, and audio-focus loss release the player; only the user's answer records a
+heard/not-heard outcome.
+
 ### Infinite tug-of-war
 **Risk:** stuck hardware button or competing app causes endless restore loop.
 

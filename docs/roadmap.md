@@ -48,6 +48,10 @@ Exit: clean build, meaningful unit tests, static gates green on remote SHA.
 
 ## M2 — Diagnose
 
+Status on 2026-09-01: **complete for the implemented M2 scope and available-device evidence**. ADR-005 fixes the
+lowest-nonzero rule, the product Diagnose surface replaces the M0 debug panel, and the supported Motorola correction
+path is verified by fresh readback. This does not close M0C or establish cross-OEM compatibility.
+
 - SoundSnapshot adapter;
 - capability model;
 - deterministic readiness engine;
@@ -59,6 +63,10 @@ Exit: clean build, meaningful unit tests, static gates green on remote SHA.
 Exit: CUJ-1 and CUJ-2 proven on representative devices.
 
 ## M3 — Safe Test
+
+Status on 2026-09-01: **partial / experimental**. The guided generated-tone flow, bounded steps below maximum,
+immediate/lifecycle stop, localized accessible UI, and deterministic/Android boundary tests exist. Human audible,
+comfort, TalkBack, 200% font, and contrast validation on a physical device remain required for exit.
 
 - guided test flow;
 - bounded/progressive playback;

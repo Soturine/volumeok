@@ -152,8 +152,9 @@ Classify state:
 
 Do not put all of them into one global mutable singleton.
 
-The current synchronous M1 surface uses Compose `mutableStateOf` in a screen ViewModel. Coroutines/StateFlow should be
-introduced when asynchronous playback, persistence, or event streams require them, not as an unused abstraction.
+The current surface uses Compose `mutableStateOf` in screen ViewModels. The bounded Android tone adapter reports its
+asynchronous completion through a small callback port; Coroutines/StateFlow remain deferred until cancellation,
+persistence, or event-stream complexity requires them rather than being added as unused abstractions.
 
 ## Persistence
 
@@ -243,23 +244,27 @@ Create/update an ADR for changes involving:
 - major third-party runtime dependency;
 - Gradle module split with lasting coupling consequences.
 
-## Current M0 implementation
+## Current M0-M3 implementation
 
 M0 uses one `:app` Gradle module with package boundaries rather than premature modules:
 
 ```text
-application/       snapshot and controlled-write ports/use case
-domain/            evidence, readiness, protection and circuit breaker
-feature/home/      ViewModel/UDF state and diagnostic Compose UI
-platform/audio/    AudioManager, NotificationManager and foreground observer adapters
+application/       snapshot, verified correction, controlled-write and safe-test session ports/use cases
+domain/            evidence, readiness, safe-test bounds, protection and circuit breaker
+feature/home/      product Diagnose ViewModel/UDF UI plus optional diagnostic details
+feature/safetest/  guided local-tone ViewModel/UDF UI
+platform/audio/    sound snapshot, generated-tone and foreground observer Android adapters
 ```
 
 The composition root is `MainActivity`. It wires `AndroidSoundStateAdapter` and a foreground-only
-`SoundSettingsObserver` to `HomeViewModel`. No Android type enters the domain package.
+`SoundSettingsObserver` to `HomeViewModel`, and `AndroidSafeTonePlayer` to `SafeTestViewModel`. The generated-tone
+adapter takes transient audio focus, releases it on completion/stop/interruption, and changes no system volume state.
+No Android type enters the domain or application contracts.
 
 The explicit composition root is sufficient for the current object graph. Hilt and a Gradle module split are deferred
 until dependency-graph complexity or build/ownership boundaries justify their cost. DataStore is also deferred because
 M1 has no genuine persistent preference yet.
 
-There is no persistence or continuous runtime in M0. Runtime protection is always reported as `STOPPED`. The observer
-is an experimental UI refresh signal, not a background-protection mechanism; ADR-004 records the deferred decision.
+There is no persistence or continuous runtime. Product UI reports protection as unavailable. The observer is an
+experimental foreground UI refresh signal, not a background-protection mechanism; ADR-004 records the deferred
+decision.
